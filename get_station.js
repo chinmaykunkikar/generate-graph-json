@@ -5,10 +5,12 @@ const readline = require('readline').createInterface({
     output: process.stdout
 });
 const fs = require('fs');
-const inputFile = './mumbai.input.json';
-const nodesFile = './mumbai_nodes.json';
-const edgesFile = './mumbai_edges.json';
-const linesFile = './mumbai_lines.json';
+const cfg = require('./config.json')
+
+const inputFile = './' + cfg.city + '/' + cfg.city + '.input.json';
+const nodesFile = './' + cfg.city + '/' + cfg.city + '_nodes.json';
+const edgesFile = './' + cfg.city + '/' + cfg.city + '_edges.json';
+const linesFile = './' + cfg.city + '/' + cfg.city + '_lines.json';
 
 // string prototype functions
 String.prototype.toTitleCase = function () {
@@ -19,7 +21,7 @@ String.prototype.count = function (str) {
 }
 
 function stnNodesToJSON() {
-    console.log('- Add station');
+    console.log('- Add station for: ' + cfg.city);
     let readRecursively = function () {
         readline.question('Input parameters (id, label, latitude, longitude): ', function (stnDataInput) {
             start: if (stnDataInput == 'q' || stnDataInput == 'exit') {
@@ -57,7 +59,7 @@ function stnNodesToJSON() {
 }
 
 function stnEdgesToJSON() {
-    console.log('- Add station edge');
+    console.log('- Add station edge for: ' + cfg.city);
     let readRecursively = function () {
         readline.question('Input parameters (source, target, line): ', function (stnEdgeInput) {
             start: if (stnEdgeInput == 'q' || stnEdgeInput == 'exit') {
@@ -93,7 +95,7 @@ function stnEdgesToJSON() {
 }
 
 function addNewLine() {
-    console.log('- Add line');
+    console.log('- Add line for: ' + cfg.city);
     readline.question('Input parameters (id, color, group): ', function (newLineInput) {
         start: if (newLineInput == 'q' || newLineInput == 'exit') {
             return readline.close();
@@ -143,7 +145,24 @@ function makeInputFile() {
     });
 }
 
-// TODO city name as command line argument for future works
+function setCity() {
+    console.log('Current city is: ' + cfg.city);
+    readline.question('Input city name: ', function (newCity) {
+        if (newCity == 'q' || newCity == 'exit') {
+            return readline.close();
+        } else {
+            let newConfig = './config.json';
+            fs.writeFile(newConfig, JSON.stringify({ city: newCity }), (e) => {
+                if (e) {
+                    console.error(e);
+                    return;
+                };
+                console.log("City set to: " + newCity);
+                process.exit(0);
+            });
+        }
+    });
+}
 
 let action = process.argv[2];
 switch (action) {
@@ -159,7 +178,11 @@ switch (action) {
     case '-m':
         makeInputFile();
         break;
+    case '-c':
+        setCity();
+        break;
     default:
-        console.log("USAGE: get_station.js [-n][-e][-l][-m]\n-n\tTo input station nodes\n-e\tTo input station edges\n-l\tTo add a new line\n-m\tTo generate the input file");
+        console.log("USAGE: get_station.js [-n][-e][-l][-m][-c]\n-n\tAdd station nodes\n-e\tAdd station edges\
+        \n-l\tAdd a new line\n-m\tGenerate the input file\n-c\tSet new working city");
         process.exit(1);
 }
